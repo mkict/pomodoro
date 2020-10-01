@@ -2,6 +2,7 @@ var socket = io();
 var $log = $('.bot #log');
 var $countDown = $('.mid #countDown');
 var count = 1;
+const TIME_ONE_SECOND = 1000;
 
 $alertBtn = $('.mid #alert-btn');
 $alertBtn.click(function() {
@@ -9,30 +10,34 @@ $alertBtn.click(function() {
 });
 
 socket.on('startCount', function() {
-	$log.append($('<li id = ' + count + '>').text('' + count + '. Pomodoro'));
+	logAppendToList(count, 'Pomodoro');
 	runClockPomo();
 });
 
 socket.on('break', function(){
-	$log.append($('<li id = ' + count + '>').text('' + count + '. Break'));
+	logAppendToList(count, 'Break');
 	runClockBreak();
 });
 
 socket.on('updateCount', function() {
-	$log.append($('<li id = ' + count + '>').text('' + count + '. Pomodoro'));
+	logAppendToList(count, 'Pomodoro');
 	runClockPomo();
 });
 
+function logAppendToList (count, text) {
+	$log.append($(`<li id=${count}'>`).text(`${count}. ${text}`));
+}
+
 function runClockPomo() {
-	var min = 0,
-	    sec = 2;
-	var clock = setInterval(fcount, 1000);
+	let min = 0, sec = 2;
+	var clock = setInterval(fcount, TIME_ONE_SECOND);
 	function fcount() {
 		if (min == 0 && sec == 0) {
 			clearInterval(clock);
 			socket.emit('fin');
 			return 0;
 		}
+
 		if (sec == 0) {
 			min--;
 			sec--;
@@ -40,20 +45,15 @@ function runClockPomo() {
 		} else {
 			sec--;
 		}
-		document.getElementById("countDown").innerHTML = min + ":" + sec;
+		document.getElementById("countDown").innerHTML = `${min}:${sec}`;
 	}
 }
 
 function runClockBreak() {
-	if (count % 4 == 0) {
-		var bmin = 0,
-		    bsec = 4;
-	} else {
-		var bmin = 0,
-		    bsec = 3;
-	}
+	let bmin = 0;
+	let bsec = count % 4 == 0 ? 4 : 3;
 
-	var clock = setInterval(fcount, 1000);
+	var clock = setInterval(fcount, TIME_ONE_SECOND);
 	function fcount() {
 		if (bmin == 0 && bsec == 0) {
 			clearInterval(clock);
@@ -61,6 +61,7 @@ function runClockBreak() {
 			socket.emit('update');
 			return 0;
 		}
+
 		if (bsec == 0) {
 			bmin--;
 			bsec--;
@@ -68,6 +69,6 @@ function runClockBreak() {
 		} else {
 			bsec--;
 		}
-		document.getElementById("countDown").innerHTML = bmin + ":" + bsec;
+		document.getElementById("countDown").innerHTML = `${bmin}:${bsec}`;
 	}
 }
